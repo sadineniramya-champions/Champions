@@ -700,6 +700,76 @@
         }
     }
     
+    // PB/SB CALCULATION
+    const seasonMonths = 3; // Default season length
+    
+    function calculateBests(exerciseName) {
+        let personalBest = 0;
+        let seasonBest = 0;
+        
+        // Get all dates from localStorage
+        const allDates = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('athlete-sessions-')) {
+                const date = key.replace('athlete-sessions-', '');
+                allDates.push(date);
+            }
+        }
+        
+        // Calculate date cutoff for season (3 months ago)
+        const today = new Date();
+        const seasonCutoff = new Date(today);
+        seasonCutoff.setMonth(today.getMonth() - seasonMonths);
+        const seasonCutoffStr = seasonCutoff.toISOString().split('T')[0];
+        
+        // Go through all historical sessions
+        allDates.forEach(date => {
+            try {
+                const sessionData = localStorage.getItem(`athlete-sessions-${date}`);
+                if (sessionData) {
+                    const sessionsData = JSON.parse(sessionData);
+                    
+                    // Check both morning and evening
+                    ['morning', 'evening'].forEach(sessionType => {
+                        sessionsData[sessionType]?.forEach(category => {
+                            category.exercises?.forEach(exercise => {
+                                if (exercise.name === exerciseName) {
+                                    let maxWeight = 0;
+                                    
+                                    // Handle Half Squads with setData
+                                    if (exercise.setData && Array.isArray(exercise.setData)) {
+                                        exercise.setData.forEach(set => {
+                                            const weight = parseInt(set.weight) || 0;
+                                            if (weight > maxWeight) maxWeight = weight;
+                                        });
+                                    } else {
+                                        // Regular weight field
+                                        maxWeight = parseInt(exercise.weight) || 0;
+                                    }
+                                    
+                                    // Update Personal Best (all time)
+                                    if (maxWeight > personalBest) {
+                                        personalBest = maxWeight;
+                                    }
+                                    
+                                    // Update Season Best (within season months)
+                                    if (date >= seasonCutoffStr && maxWeight > seasonBest) {
+                                        seasonBest = maxWeight;
+                                    }
+                                }
+                            });
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Error calculating bests:', error);
+            }
+        });
+        
+        return { personalBest, seasonBest };
+    }
+    
     // WORKOUT MODE
     function startWorkout(sessionType) {
         state.workoutSession = sessionType;
@@ -766,7 +836,31 @@
                         </div>
                         <div class="flex items-center gap-4 mb-4">
                             <span class="text-5xl">${exerciseEmojis[currentEx.name] || '💪'}</span>
-                            <h1 class="text-3xl font-bold text-white">${currentEx.name}</h1>
+                            <div class="flex-1">
+                                <h1 class="text-3xl font-bold text-white mb-2">${currentEx.name}</h1>
+                                ${(() => {
+                                    const { personalBest, seasonBest } = calculateBests(currentEx.name);
+                                    if (personalBest > 0 || seasonBest > 0) {
+                                        let badges = '<div class="flex gap-3 text-sm">';
+                                        if (personalBest > 0) {
+                                            badges += '<div class="bg-yellow-600/20 border border-yellow-600/50 px-3 py-1 rounded-lg">';
+                                            badges += '<span class="text-yellow-400 font-bold">PB:</span>';
+                                            badges += '<span class="text-white font-bold ml-1">' + personalBest + 'kg</span>';
+                                            badges += '</div>';
+                                        }
+                                        if (seasonBest > 0) {
+                                            badges += '<div class="bg-blue-600/20 border border-blue-600/50 px-3 py-1 rounded-lg">';
+                                            badges += '<span class="text-blue-400 font-bold">SB:</span>';
+                                            badges += '<span class="text-white font-bold ml-1">' + seasonBest + 'kg</span>';
+                                            badges += '<span class="text-slate-400 text-xs ml-1">(' + seasonMonths + 'mo)</span>';
+                                            badges += '</div>';
+                                        }
+                                        badges += '</div>';
+                                        return badges;
+                                    }
+                                    return '';
+                                })()}
+                            </div>
                         </div>
                         
                         <!-- Scrollable Dial Wheels -->
@@ -788,7 +882,7 @@
                                                 const distance = Math.abs(i - current);
                                                 const opacity = distance === 0 ? 1 : distance === 1 ? 0.5 : 0.2;
                                                 const fontSize = distance === 0 ? 'text-4xl' : distance === 1 ? 'text-2xl' : 'text-lg';
-                                                return `<div class="h-12 flex items-center justify-center font-bold text-white ${fontSize}" style="opacity: ${opacity}">${i}</div>`;
+                                                return `<div class="wheel-item h-12 flex items-center justify-center font-bold text-white ${fontSize}" style="opacity: ${opacity}">${i}</div>`;
                                             }).join('')}
                                             <div class="h-16"></div>
                                         </div>
@@ -811,7 +905,7 @@
                                                 const distance = Math.abs(i - current);
                                                 const opacity = distance === 0 ? 1 : distance === 1 ? 0.5 : 0.2;
                                                 const fontSize = distance === 0 ? 'text-4xl' : distance === 1 ? 'text-2xl' : 'text-lg';
-                                                return `<div class="h-12 flex items-center justify-center font-bold text-white ${fontSize}" style="opacity: ${opacity}">${i}</div>`;
+                                                return `<div class="wheel-item h-12 flex items-center justify-center font-bold text-white ${fontSize}" style="opacity: ${opacity}">${i}</div>`;
                                             }).join('')}
                                             <div class="h-16"></div>
                                         </div>
@@ -837,7 +931,7 @@
                                                 const distance = Math.abs(val - current) / 5;
                                                 const opacity = distance === 0 ? 1 : distance === 1 ? 0.5 : 0.2;
                                                 const fontSize = distance === 0 ? 'text-4xl' : distance === 1 ? 'text-2xl' : 'text-lg';
-                                                return `<div class="h-12 flex items-center justify-center font-bold text-white ${fontSize}" style="opacity: ${opacity}">${val}</div>`;
+                                                return `<div class="wheel-item h-12 flex items-center justify-center font-bold text-white ${fontSize}" style="opacity: ${opacity}">${val}</div>`;
                                             }).join('')}
                                             <div class="h-16"></div>
                                         </div>
@@ -862,7 +956,7 @@
                                                 const distance = Math.abs(i - current);
                                                 const opacity = distance === 0 ? 1 : distance === 1 ? 0.5 : 0.2;
                                                 const fontSize = distance === 0 ? 'text-4xl' : distance === 1 ? 'text-2xl' : 'text-lg';
-                                                return `<div class="h-12 flex items-center justify-center font-bold text-white ${fontSize}" style="opacity: ${opacity}">${i}</div>`;
+                                                return `<div class="wheel-item h-12 flex items-center justify-center font-bold text-white ${fontSize}" style="opacity: ${opacity}">${i}</div>`;
                                             }).join('')}
                                             <div class="h-16"></div>
                                         </div>
@@ -882,6 +976,19 @@
                     </div>
                     
                     <div class="bg-slate-800 p-4 border-t border-slate-700">
+                        <!-- Add/Delete buttons -->
+                        <div class="flex gap-2 mb-3">
+                            <button type="button" onclick="deleteCurrentExercise()" 
+                                    class="flex-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold">
+                                🗑️ Delete Exercise
+                            </button>
+                            <button type="button" onclick="showAddExerciseModal()" 
+                                    class="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold">
+                                ➕ Add Exercise
+                            </button>
+                        </div>
+                        
+                        <!-- Main action buttons -->
                         <div class="flex gap-2">
                             <button type="button" onclick="prevExercise()" ${state.currentExerciseIndex === 0 ? 'disabled' : ''}
                                     class="px-4 py-3 bg-slate-700 text-white rounded-lg disabled:opacity-50 font-semibold">
@@ -915,11 +1022,23 @@
                 const weightEl = document.getElementById('weightWheel');
                 const durationEl = document.getElementById('durationWheel');
                 
-                if (setsEl) setsEl.scrollTop = (parseInt(currentEx.sets) || 0) * 48;
-                if (repsEl) repsEl.scrollTop = (parseInt(currentEx.reps) || 0) * 48;
-                if (weightEl) weightEl.scrollTop = ((parseInt(currentEx.weight) || 0) / 5) * 48;
-                if (durationEl) durationEl.scrollTop = (parseInt(currentEx.duration) || 0) * 48;
-            }, 100);
+                if (setsEl) {
+                    setsEl.scrollTop = (parseInt(currentEx.sets) || 0) * 48;
+                    setsEl.style.scrollBehavior = 'smooth';
+                }
+                if (repsEl) {
+                    repsEl.scrollTop = (parseInt(currentEx.reps) || 0) * 48;
+                    repsEl.style.scrollBehavior = 'smooth';
+                }
+                if (weightEl) {
+                    weightEl.scrollTop = ((parseInt(currentEx.weight) || 0) / 5) * 48;
+                    weightEl.style.scrollBehavior = 'smooth';
+                }
+                if (durationEl) {
+                    durationEl.scrollTop = (parseInt(currentEx.duration) || 0) * 48;
+                    durationEl.style.scrollBehavior = 'smooth';
+                }
+            }, 50);
         }
     }
     
@@ -1014,27 +1133,93 @@
     }
     
     function handleWheelScroll(field, element) {
-        const scrollTop = element.scrollTop;
+        // Update highlighting in real-time as user scrolls
+        updateWheelHighlighting(element, field);
+        
+        // Clear any existing timeout
+        if (element.scrollTimeout) {
+            clearTimeout(element.scrollTimeout);
+        }
+        
+        // Set a timeout to snap to nearest value when scrolling stops
+        element.scrollTimeout = setTimeout(() => {
+            const scrollTop = element.scrollTop;
+            const itemHeight = 48;
+            let value;
+            let snappedIndex;
+            
+            if (field === 'weight') {
+                // Weight goes in increments of 5
+                snappedIndex = Math.round(scrollTop / itemHeight);
+                value = (snappedIndex * 5).toString();
+            } else {
+                // Sets, Reps, Duration go 1 by 1
+                snappedIndex = Math.round(scrollTop / itemHeight);
+                value = snappedIndex.toString();
+            }
+            
+            // Snap to the nearest value with smooth scroll
+            element.scrollTo({
+                top: snappedIndex * itemHeight,
+                behavior: 'smooth'
+            });
+            
+            // Save the value
+            const allExercises = getAllExercisesInSession(state.workoutSession);
+            const currentEx = allExercises[state.currentExerciseIndex];
+            
+            if (currentEx) {
+                const updated = { ...state.sessions };
+                updated[state.workoutSession][currentEx.categoryIndex].exercises[currentEx.exerciseIndex][field] = value;
+                saveSessions(updated);
+            }
+            
+            // Final highlighting update after snap
+            setTimeout(() => updateWheelHighlighting(element, field), 100);
+        }, 100);
+    }
+    
+    function updateWheelHighlighting(wheelElement, field) {
+        const scrollTop = wheelElement.scrollTop;
         const itemHeight = 48;
-        let value;
         
+        // Calculate which index is currently centered
+        let centerIndex;
         if (field === 'weight') {
-            // Weight goes in increments of 5
-            const index = Math.round(scrollTop / itemHeight);
-            value = (index * 5).toString();
+            centerIndex = Math.round(scrollTop / itemHeight);
         } else {
-            // Sets, Reps, Duration go 1 by 1
-            value = Math.round(scrollTop / itemHeight).toString();
+            centerIndex = Math.round(scrollTop / itemHeight);
         }
         
-        const allExercises = getAllExercisesInSession(state.workoutSession);
-        const currentEx = allExercises[state.currentExerciseIndex];
-        
-        if (currentEx) {
-            const updated = { ...state.sessions };
-            updated[state.workoutSession][currentEx.categoryIndex].exercises[currentEx.exerciseIndex][field] = value;
-            saveSessions(updated);
-        }
+        // Update all items
+        const items = wheelElement.querySelectorAll('.wheel-item');
+        items.forEach((item, i) => {
+            let itemValue;
+            if (field === 'weight') {
+                itemValue = parseInt(item.textContent);
+                var itemIndex = itemValue / 5;
+            } else {
+                itemValue = parseInt(item.textContent);
+                var itemIndex = itemValue;
+            }
+            
+            const distance = Math.abs(itemIndex - centerIndex);
+            const opacity = distance === 0 ? 1 : distance === 1 ? 0.5 : 0.2;
+            
+            // Remove all size classes
+            item.classList.remove('text-4xl', 'text-2xl', 'text-lg');
+            
+            // Add appropriate size class based on distance
+            if (distance === 0) {
+                item.classList.add('text-4xl');
+            } else if (distance === 1) {
+                item.classList.add('text-2xl');
+            } else {
+                item.classList.add('text-lg');
+            }
+            
+            item.style.opacity = opacity;
+        });
     }
     
     function closeWorkout() {
@@ -1042,6 +1227,118 @@
         if (workout) workout.remove();
         state.showWorkoutMode = false;
         render();
+    }
+    
+    function deleteCurrentExercise() {
+        if (!confirm('Are you sure you want to delete this exercise?')) return;
+        
+        const allExercises = getAllExercisesInSession(state.workoutSession);
+        const currentEx = allExercises[state.currentExerciseIndex];
+        
+        if (currentEx) {
+            const updated = { ...state.sessions };
+            const category = updated[state.workoutSession][currentEx.categoryIndex];
+            
+            // Remove the exercise
+            category.exercises.splice(currentEx.exerciseIndex, 1);
+            
+            // If category is now empty, remove it
+            if (category.exercises.length === 0) {
+                updated[state.workoutSession].splice(currentEx.categoryIndex, 1);
+            }
+            
+            saveSessions(updated);
+            
+            // Move to previous exercise if we deleted the last one
+            const newAllExercises = getAllExercisesInSession(state.workoutSession);
+            if (state.currentExerciseIndex >= newAllExercises.length) {
+                state.currentExerciseIndex = Math.max(0, newAllExercises.length - 1);
+            }
+            
+            renderWorkoutMode();
+        }
+    }
+    
+    function showAddExerciseModal() {
+        const modal = document.createElement('div');
+        modal.id = 'addExerciseModal';
+        modal.className = 'fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4';
+        
+        // Build exercise list grouped by category
+        let exercisesList = '';
+        Object.keys(categories).forEach(categoryName => {
+            exercisesList += `
+                <div class="mb-4">
+                    <h3 class="text-white font-bold mb-2 px-3">${categoryName}</h3>
+                    <div class="space-y-1">
+                        ${categories[categoryName].map(ex => `
+                            <button type="button" onclick="addExerciseToWorkout('${categoryName}', '${ex.name.replace(/'/g, "\\'")}')"
+                                    class="w-full text-left p-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg flex items-center gap-2">
+                                <span class="text-xl">${exerciseEmojis[ex.name] || '💪'}</span>
+                                <span>${ex.name}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        });
+        
+        modal.innerHTML = `
+            <div class="bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+                <div class="p-4 border-b border-slate-700 flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-white">➕ Add Exercise</h2>
+                    <button type="button" onclick="closeAddExerciseModal()" class="text-white text-2xl">×</button>
+                </div>
+                <div class="p-4 overflow-y-auto flex-1">
+                    ${exercisesList}
+                </div>
+                <div class="p-4 border-t border-slate-700">
+                    <button type="button" onclick="closeAddExerciseModal()" class="w-full px-4 py-2 bg-slate-600 text-white rounded-lg">Cancel</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    function closeAddExerciseModal() {
+        const modal = document.getElementById('addExerciseModal');
+        if (modal) modal.remove();
+    }
+    
+    function addExerciseToWorkout(categoryName, exerciseName) {
+        const exercise = categories[categoryName].find(ex => ex.name === exerciseName);
+        if (!exercise) return;
+        
+        const updated = { ...state.sessions };
+        
+        // Find or create category in current session
+        let categoryIndex = updated[state.workoutSession].findIndex(c => c.category === categoryName);
+        
+        if (categoryIndex === -1) {
+            // Create new category
+            updated[state.workoutSession].push({
+                id: categoryName + '-' + Date.now(),
+                category: categoryName,
+                exercises: []
+            });
+            categoryIndex = updated[state.workoutSession].length - 1;
+        }
+        
+        // Add exercise to category
+        updated[state.workoutSession][categoryIndex].exercises.push({
+            ...exercise,
+            completed: false
+        });
+        
+        saveSessions(updated);
+        closeAddExerciseModal();
+        
+        // Move to the newly added exercise
+        const allExercises = getAllExercisesInSession(state.workoutSession);
+        state.currentExerciseIndex = allExercises.length - 1;
+        
+        renderWorkoutMode();
+        alert('✅ Exercise added!');
     }
     
                     
