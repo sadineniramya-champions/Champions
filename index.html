@@ -4,67 +4,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Athlete Dashboard">
+    <meta name="theme-color" content="#1e293b">
+    <link rel="manifest" href="manifest.json">
+    <title>Athlete Training Dashboard</title>
 
 ```
-<!-- PWA Meta Tags -->
-<meta name="theme-color" content="#1e293b">
-<meta name="description" content="Professional athlete training dashboard">
-
-<!-- iOS PWA Support -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Athlete Dashboard">
-
-<!-- PWA Manifest -->
-<link rel="manifest" href="manifest.json">
-
-<title>Athlete Training Dashboard</title>
-
-<!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
-
-<!-- React -->
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
-<!-- Babel -->
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 <style>
-    body {
-        margin: 0;
-        padding: 0;
-        overscroll-behavior-y: contain;
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-    }
-    .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-    
-    button {
-        -webkit-user-select: none;
-        user-select: none;
-        -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 0; overscroll-behavior-y: contain; }
+    button { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
 ```
 
 </head>
-<body>
+<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
     <div id="root"></div>
 
 ```
 <script type="text/babel">
+    const { useState, useEffect } = React;
 ```
 
-import { Plus, TrendingUp, Calendar, Dumbbell, Trash2, Sun, Moon, ChevronDown, ChevronRight, ChevronLeft, Check, X, CalendarDays, Edit, ArrowRight, Play } from ‘lucide-react’;
-
-export default function AthleteDashboard() {
+function AthleteDashboard() {
 // Exercise emoji mapping - person emojis matching actual exercise movements
 const exerciseEmojis = {
 // ABC Drills - Running drills with different knee heights
@@ -971,7 +942,7 @@ const SessionCard = ({ sessionType, sessionData, icon: Icon }) => (
 <div className="bg-slate-800 rounded-xl p-4 shadow-xl border border-slate-700">
 <div className="flex items-center justify-between mb-3">
 <h2 className="text-xl font-bold text-white flex items-center gap-2">
-<Icon size={24} className={sessionType === ‘morning’ ? ‘text-yellow-400’ : ‘text-blue-400’} />
+<span className="text-2xl">•</span>
 {sessionType === ‘morning’ ? ‘Morning Session’ : ‘Evening Session’}
 <span className="text-sm text-slate-400">({sessionData?.length || 0} categories)</span>
 </h2>
@@ -979,7 +950,7 @@ const SessionCard = ({ sessionType, sessionData, icon: Icon }) => (
 onClick={() => loadSessionPlan(sessionType)}
 className=“px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-2”
 >
-<ArrowRight size={18} />
+<span className="text-lg">→</span>
 Load Plan
 </button>
 </div>
@@ -1002,7 +973,7 @@ return (
 onClick={() => toggleCategoryExpanded(categoryData.id)}
 className=“flex items-center gap-2 text-blue-400 hover:text-blue-300 transition flex-1”
 >
-{isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+{isExpanded ? <span className="text-xl">▼</span> : <span className="text-xl">▶</span>}
 <h3 className="text-base font-bold text-white">{categoryData.category}</h3>
 </button>
 <button
@@ -1037,7 +1008,7 @@ title=“Delete category”
                         }`}
                         title={exercise.completed ? 'Mark as not done' : 'Mark as done'}
                       >
-                        {exercise.completed ? <Check size={14} /> : <X size={14} />}
+                        {exercise.completed ? <span className="text-base">✓</span> : <X size={14} />}
                       </button>
                     </div>
                     <div className="grid grid-cols-2 gap-1 text-xs">
@@ -1090,7 +1061,7 @@ title=“Delete category”
         }}
         className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition font-semibold text-lg flex items-center justify-center gap-2"
       >
-        <Play size={24} />
+        <span className="text-2xl">▶️</span>
         Start Workout
       </button>
     </div>
@@ -1105,7 +1076,7 @@ return (
 <div className="max-w-7xl mx-auto">
 <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 mb-4 shadow-2xl">
 <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-<Dumbbell size={36} />
+<span className="text-2xl">💪</span>
 Athlete Training Dashboard
 </h1>
 </div>
@@ -1144,7 +1115,7 @@ Athlete Training Dashboard
           onClick={() => setShowWeekPlanModal(true)}
           className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2"
         >
-          <CalendarDays size={20} />
+          <span className="text-xl">📆</span>
           Plan Week
         </button>
         <button
@@ -1163,7 +1134,7 @@ Athlete Training Dashboard
           }}
           className="px-4 py-2 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-lg hover:from-orange-700 hover:to-red-700 flex items-center gap-2 font-semibold"
         >
-          <Dumbbell size={20} />
+          <span className="text-xl">💪</span>
           Coach's Today Plan
         </button>
         <div className="ml-auto flex gap-2">
@@ -1171,7 +1142,7 @@ Athlete Training Dashboard
             onClick={() => setShowSummaryModal(true)}
             className="px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 flex items-center gap-2"
           >
-            <TrendingUp size={18} />
+            <span className="text-lg">📈</span>
             Summary
           </button>
           <button
@@ -1232,7 +1203,7 @@ Athlete Training Dashboard
     {(todaysPlan.morning.length > 0 || todaysPlan.evening.length > 0) && (
       <div className="bg-slate-800 rounded-xl p-4 mb-4 border-2 border-blue-500/30">
         <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-          <Calendar size={20} className="text-blue-400" />
+          <span className="text-xl text-blue-400">📅</span>
           Today's Plan
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1240,7 +1211,7 @@ Athlete Training Dashboard
           <div className="bg-slate-700 rounded-lg p-3">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-white font-semibold flex items-center gap-2">
-                <Sun size={18} className="text-yellow-400" />
+                <span className="text-lg text-yellow-400">☀️</span>
                 Morning Session
                 {todaysPlan.morning.length > 0 && (
                   <span className="text-xs bg-yellow-500 text-black px-2 py-0.5 rounded-full">
@@ -1280,7 +1251,7 @@ Athlete Training Dashboard
                       }}
                       className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs flex items-center gap-1 ml-2"
                     >
-                      <Edit size={12} />
+                      <span className="text-base">✏️</span>
                       Edit
                     </button>
                   </div>
@@ -1293,7 +1264,7 @@ Athlete Training Dashboard
           <div className="bg-slate-700 rounded-lg p-3">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-white font-semibold flex items-center gap-2">
-                <Moon size={18} className="text-blue-400" />
+                <span className="text-lg text-blue-400">🌙</span>
                 Evening Session
                 {todaysPlan.evening.length > 0 && (
                   <span className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full">
@@ -1333,7 +1304,7 @@ Athlete Training Dashboard
                       }}
                       className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs flex items-center gap-1 ml-2"
                     >
-                      <Edit size={12} />
+                      <span className="text-base">✏️</span>
                       Edit
                     </button>
                   </div>
@@ -1387,7 +1358,7 @@ Athlete Training Dashboard
                 }} 
                 className="text-white"
               >
-                <X size={24} />
+                <span className="text-2xl">×</span>
               </button>
             </div>
             
@@ -1400,7 +1371,7 @@ Athlete Training Dashboard
                     : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
                 }`}
               >
-                <Sun size={18} />
+                <span className="text-lg">☀️</span>
                 Morning
               </button>
               <button
@@ -1411,7 +1382,7 @@ Athlete Training Dashboard
                     : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
                 }`}
               >
-                <Moon size={18} />
+                <span className="text-lg">🌙</span>
                 Evening
               </button>
             </div>
@@ -1445,7 +1416,7 @@ Athlete Training Dashboard
                           <h3 className="font-bold text-base">{group}</h3>
                           {isSelected && (
                             <div className="bg-white/20 rounded-full p-0.5">
-                              <Check size={16} />
+                              <span>✓</span>
                             </div>
                           )}
                         </div>
@@ -1535,7 +1506,7 @@ Athlete Training Dashboard
                       >
                         <div className="flex items-center justify-between mb-1">
                           <h3 className="font-bold text-sm">{category}</h3>
-                          {isSelected && <Check size={16} />}
+                          {isSelected && <span>✓</span>}
                         </div>
                         <div className="text-xs opacity-80">
                           {exerciseCategoriesWithDefaults[category].length} exercises
@@ -1587,7 +1558,7 @@ Athlete Training Dashboard
                           className="flex items-center justify-between p-2 hover:bg-slate-600 rounded-t-lg transition w-full text-left"
                         >
                           <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                            {isExpanded ? <ChevronDown size={16} className="text-blue-400 flex-shrink-0" /> : <ChevronRight size={16} className="text-slate-400 flex-shrink-0" />}
+                            {isExpanded ? <span className="text-base text-blue-400 flex-shrink-0">▼</span> : <span className="text-base text-slate-400 flex-shrink-0">▶</span>}
                             <h3 className="font-bold text-white text-sm truncate">{categoryData.category}</h3>
                           </div>
                           <div className="bg-green-500 text-white px-1.5 py-0.5 rounded text-xs flex items-center gap-1 flex-shrink-0 ml-1">
@@ -1737,7 +1708,7 @@ Athlete Training Dashboard
         <div className="bg-slate-800 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
           <div className="p-4 border-b border-slate-700 flex items-center justify-between">
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <CalendarDays size={24} />
+              <span className="text-2xl">📆</span>
               Plan Your Week
             </h2>
             <button 
@@ -1747,7 +1718,7 @@ Athlete Training Dashboard
               }} 
               className="text-white"
             >
-              <X size={24} />
+              <span className="text-2xl">×</span>
             </button>
           </div>
           
@@ -1845,7 +1816,7 @@ Athlete Training Dashboard
             <div className="px-2 py-1.5 border-b border-slate-700 bg-slate-900">
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
-                  <TrendingUp size={16} className="text-green-500" />
+                  <span className="text-base text-green-500">📈</span>
                   <h2 className="text-sm font-bold text-white">
                     {new Date(selectedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   </h2>
@@ -1869,7 +1840,7 @@ Athlete Training Dashboard
                       : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                   }`}
                 >
-                  <Sun size={14} />
+                  <span className="text-base">☀️</span>
                   Morning ({totalMorning})
                 </button>
                 <button
@@ -1880,7 +1851,7 @@ Athlete Training Dashboard
                       : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                   }`}
                 >
-                  <Moon size={14} />
+                  <span className="text-base">🌙</span>
                   Evening ({totalEvening})
                 </button>
               </div>
@@ -1912,7 +1883,7 @@ Athlete Training Dashboard
                               <span className="text-[9px] text-white truncate flex-1" title={ex.name}>
                                 {ex.name.substring(0, 10)}
                               </span>
-                              <Check size={8} className="text-green-400 flex-shrink-0" />
+                              <span className="text-base text-green-400 flex-shrink-0">✓</span>
                             </div>
                             <div className="text-[8px] text-slate-300 flex gap-0.5 mt-0.5">
                               {ex.sets && <span>S{ex.sets}</span>}
@@ -1940,7 +1911,7 @@ Athlete Training Dashboard
           <div className="p-4 border-b border-slate-700 flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">📥 Export Data</h2>
             <button onClick={() => setShowExportModal(false)} className="text-white">
-              <X size={24} />
+              <span className="text-2xl">×</span>
             </button>
           </div>
           
@@ -1994,7 +1965,7 @@ Athlete Training Dashboard
           <div className="p-4 border-b border-slate-700 flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">📤 Import Data</h2>
             <button onClick={() => setShowImportModal(false)} className="text-white">
-              <X size={24} />
+              <span className="text-2xl">×</span>
             </button>
           </div>
           
@@ -2088,7 +2059,7 @@ Athlete Training Dashboard
           <div className="p-4 border-b border-slate-700">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Dumbbell size={24} className="text-orange-500" />
+                <span className="text-2xl text-orange-500">💪</span>
                 Coach's Today Plan
               </h2>
               <div className="flex items-center gap-2">
@@ -2118,7 +2089,7 @@ Athlete Training Dashboard
                   }} 
                   className="text-white"
                 >
-                  <X size={24} />
+                  <span className="text-2xl">×</span>
                 </button>
               </div>
             </div>
@@ -2133,7 +2104,7 @@ Athlete Training Dashboard
                     : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                 }`}
               >
-                <Sun size={20} />
+                <span className="text-xl">☀️</span>
                 Morning Session
               </button>
               <button
@@ -2144,7 +2115,7 @@ Athlete Training Dashboard
                     : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
                 }`}
               >
-                <Moon size={20} />
+                <span className="text-xl">🌙</span>
                 Evening Session
               </button>
             </div>
@@ -2198,7 +2169,7 @@ Athlete Training Dashboard
                             </p>
                           </div>
                         </div>
-                        {hasData && <Check size={24} className="text-white" />}
+                        {hasData && <span className="text-2xl text-white">✓</span>}
                       </div>
                     </button>
                   );
@@ -2362,7 +2333,7 @@ Athlete Training Dashboard
                         >
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-semibold text-sm">{category}</span>
-                            {isSelected && <Check size={16} />}
+                            {isSelected && <span>✓</span>}
                           </div>
                           <div className="text-xs opacity-80">
                             {exerciseCategoriesWithDefaults[category].length} exercises
@@ -2470,7 +2441,7 @@ Athlete Training Dashboard
           <div className="bg-slate-800 p-4 border-b border-slate-700">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                {workoutSession === 'morning' ? <Sun size={24} className="text-yellow-400" /> : <Moon size={24} className="text-blue-400" />}
+                {workoutSession === 'morning' ? <span className="text-2xl text-yellow-400">☀️</span> : <span className="text-2xl text-blue-400">🌙</span>}
                 {workoutSession === 'morning' ? 'Morning' : 'Evening'} Workout
               </h2>
               <button
@@ -2483,7 +2454,7 @@ Athlete Training Dashboard
                 }}
                 className="text-white"
               >
-                <X size={24} />
+                <span className="text-2xl">×</span>
               </button>
             </div>
             <div className="flex items-center justify-between mb-2">
@@ -2921,7 +2892,7 @@ Athlete Training Dashboard
                   disabled={currentExerciseIndex === 0}
                   className="px-3 py-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-semibold flex items-center gap-1 text-sm"
                 >
-                  <ChevronLeft size={16} />
+                  <span className="text-base">◀</span>
                   Prev
                 </button>
                 <button
@@ -2957,7 +2928,7 @@ Athlete Training Dashboard
                       : 'bg-green-600 hover:bg-green-700'
                   } text-white`}
                 >
-                  <Check size={16} />
+                  <span>✓</span>
                   {currentEx.completed || currentEx.status === 'completed' ? 'Completed' : 'Complete'}
                 </button>
                 <button
@@ -2968,7 +2939,7 @@ Athlete Training Dashboard
                   className="px-3 py-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-semibold flex items-center gap-1 text-sm"
                 >
                   Next
-                  <ChevronLeft size={16} className="rotate-180" />
+                  <span className="text-base rotate-180">◀</span>
                 </button>
               </div>
             </div>
@@ -2983,7 +2954,7 @@ Athlete Training Dashboard
         <div className="bg-slate-800 rounded-xl max-w-7xl w-full max-h-[98vh] flex flex-col">
           <div className="p-2 border-b border-slate-700 flex items-center justify-between">
             <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Edit size={18} />
+              <span className="text-lg">✏️</span>
               {currentPlanCategory}
             </h2>
             <button 
@@ -2994,7 +2965,7 @@ Athlete Training Dashboard
               }} 
               className="text-white"
             >
-              <X size={20} />
+              <span className="text-xl">×</span>
             </button>
           </div>
           
@@ -3118,19 +3089,14 @@ Athlete Training Dashboard
 }
 
 ```
-    // Render the app
-    const root = ReactDOM.createRoot(document.getElementById('root'));
+    const root = ReactDOM.createRoot(document.getElementById("root"));
     root.render(<AthleteDashboard />);
-</script>
-
-<!-- Service Worker Registration -->
-<script>
+    
+    // Register service worker
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/service-worker.js')
-                .then(reg => console.log('✅ Service Worker registered'))
-                .catch(err => console.log('❌ SW registration failed:', err));
-        });
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(() => console.log('Service Worker registered'))
+            .catch(err => console.log('Service Worker registration failed:', err));
     }
 </script>
 ```
